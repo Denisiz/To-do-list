@@ -23,10 +23,13 @@ class ViewController: UIViewController, UITableViewDataSource {
         
     }()
     ///............делаем табличку>
+    
+    var items = [String]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Список дел на сегодня"
+        self.items = UserDefaults.standard.stringArray(forKey: "items") ?? []
+        title = "Список дел"
         view.addSubview(table)
         table.dataSource = self
         ///выше написано что мы сами будем предоставлять данные для таблицы
@@ -52,16 +55,22 @@ class ViewController: UIViewController, UITableViewDataSource {
             alert.addAction(UIAlertAction(
                 title: "Готово",
                 style: .default,
-                handler: { (_) in
+                handler: { [weak self] (_) in
                     if let field = alert.textFields?.first {
                         if let text = field.text, !text.isEmpty {
                          
-                            ///сюда введём новый пункт списка дел
-                            print(text)
-                        }
-                    }
-                }))
-            
+            ///сюда введём новый пункт списка дел
+            DispatchQueue.main.async {
+                var currentItems = UserDefaults.standard.stringArray(forKey: "items") ?? []
+                currentItems.append(text)
+                UserDefaults.standard.setValue(currentItems, forKey: "items")
+                self?.items.append(text)
+                self?.table.reloadData()
+            }
+        }
+    }
+}))
+    
             ///кнопка ввод/отмены
             
             present(alert, animated: true)
@@ -74,30 +83,24 @@ class ViewController: UIViewController, UITableViewDataSource {
         super.viewDidLayoutSubviews()
         table.frame = view.bounds
     }
-    
-    
-    
-    
-    
-    
-    
     ///придаём форму>
     
                 
     
     ///создаёт и возвращает ячейку<
             func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-                return 0
+                return items.count
             }
 
             func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
                 let cell = tableView.dequeueReusableCell(
                     withIdentifier: "ячейка",
                     for: indexPath)
+                
+                cell.textLabel?.text = items[indexPath.row]
                 return cell
     ///создаёт и возвращает ячейку>
 
-}
-
+            }
 
 }
